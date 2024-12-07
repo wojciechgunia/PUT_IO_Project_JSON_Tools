@@ -17,8 +17,8 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-
 public class JsonToolsService {
+
     private final Map<String, JsonNode> storageJSON = new HashMap<>();
 
     public ResponseEntity<?> saveJSON(JsonNode json, String JSONname) {
@@ -44,6 +44,7 @@ public class JsonToolsService {
 
         ObjectWriter writer = objectMapper.writer();
         String minifiedJson;
+        try {
             minifiedJson = writer.writeValueAsString(jsonBody);
             return ResponseEntity.status(200).body(minifiedJson);
         } catch (JsonProcessingException e) {

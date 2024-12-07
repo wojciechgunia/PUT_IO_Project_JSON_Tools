@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.jsontools.entity.Code;
-import org.example.jsontools.entity.Response;
+import org.example.jsontools.services.JsonToolsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,18 +12,21 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/jsontools")
 @RequiredArgsConstructor
 @Slf4j
+
 public class JsonToolsController
 {
+    private final JsonToolsService jsonToolsService;
+
     @RequestMapping(path="/load-json",method = RequestMethod.POST)
     public ResponseEntity<?> loadJSON(@RequestBody JsonNode json, @RequestParam String JSONname, HttpServletResponse response)
     {
-        return ResponseEntity.ok(new Response(Code.SUCCESS));
+        return jsonToolsService.saveJSON(json, JSONname);
     }
 
     @RequestMapping(path="/get-minimalize",method = RequestMethod.GET)
     public ResponseEntity<?> minJSON(@RequestParam String JSONname, HttpServletResponse response)
     {
-        return ResponseEntity.ok("ok");
+        return jsonToolsService.minJSON(JSONname);
     }
 
     @RequestMapping(path="/get-full",method = RequestMethod.GET)
