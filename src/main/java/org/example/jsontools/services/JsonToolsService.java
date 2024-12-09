@@ -56,6 +56,9 @@ public class JsonToolsService {
 
     public ResponseEntity<?> withoutJSON(String JSONname, List<String> keysToRemove) {
         JsonNode jsonBody = storageJSON.get(JSONname).deepCopy();
+        if (jsonBody == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
 
         JsonNode filteredNode = filterKeys(jsonBody, keysToRemove);
 
