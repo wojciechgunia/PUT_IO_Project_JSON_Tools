@@ -65,7 +65,7 @@ public class JsonToolsService {
         return ResponseEntity.status(200).body(filteredNode);
     }
 
-    public static JsonNode filterKeys(JsonNode rootNode, List<String> keys) {
+    private static JsonNode filterKeys(JsonNode rootNode, List<String> keys) {
         if (rootNode.isObject()) {
             Iterator<String> fieldNames = rootNode.fieldNames();
             while (fieldNames.hasNext()) {
