@@ -50,7 +50,7 @@ public class JsonToolsController
     @RequestMapping(path="/get-differences",method = RequestMethod.GET)
     public ResponseEntity<?> diffJSONs(@RequestParam String JSONname1,  @RequestParam String JSONname2, HttpServletResponse response)
     {
-        return ResponseEntity.ok("ok");
+        return jsonToolsService.compareJSON(JSONname1, JSONname2);
     }
 
 
