@@ -59,9 +59,16 @@ public class JsonToolsService {
         JsonNode firstJSON = storageJSON.get(firstJSONname);
         JsonNode secondJSON = storageJSON.get(secondJSONname);
 
-        String differences = findDifferences(firstJSON, secondJSON);
+        if (firstJSON == null || secondJSON == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
 
-        return ResponseEntity.ok(differences);
+        try {
+            String differences = findDifferences(firstJSON, secondJSON);
+            return ResponseEntity.ok(differences);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(new Response(Code.BR5));
+        }
     }
 
     private String findDifferences(JsonNode node1, JsonNode node2) {
