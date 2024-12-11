@@ -7,7 +7,7 @@ public enum Code
     BR2("JSON o takiej nazwie już istnieje"),
     BR3("Nie znaleziono JSONa o podanej nazwie"),
     BR4("Wystąpił błąd podczas minifikacji JSONa"),
-    BR5("Wystąpił problem podczas porównywania struktur typu JSON");
+    BR5("Wystąpił problem podczas porównywania struktur");
 
     public final String label;
     Code(String label)

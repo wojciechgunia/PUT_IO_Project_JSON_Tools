@@ -1,6 +1,5 @@
 package org.example.jsontools.services;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,9 +11,7 @@ import org.example.jsontools.entity.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Iterator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -22,15 +19,15 @@ import java.util.Map;
 @Slf4j
 public class JsonToolsService {
 
-    private final Map<String, JsonNode> storageJSON = new HashMap<>();
+    private final Map<String, String> storageJSON = new HashMap<>();
 
-    public ResponseEntity<?> saveJSON(JsonNode json, String JSONname) {
+    public ResponseEntity<?> saveJSON(String JSONbody, String JSONname) {
         if(storageJSON.containsKey(JSONname)) {
             return ResponseEntity.status(400).body(new Response(Code.BR2));
         }
 
         try {
-            storageJSON.put(JSONname, json);
+            storageJSON.put(JSONname, JSONbody);
             return ResponseEntity.ok(new Response(Code.SUCCESS));
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(new Response(Code.BR1));
@@ -38,17 +35,18 @@ public class JsonToolsService {
     }
 
     public ResponseEntity<?> minJSON(String JSONname) {
-        JsonNode jsonBody = storageJSON.get(JSONname);
-        if (jsonBody == null) {
+        String JSONstring = storageJSON.get(JSONname);
+        if (JSONstring == null) {
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
-
         ObjectWriter writer = objectMapper.writer();
         String minifiedJson;
+
         try {
-            minifiedJson = writer.writeValueAsString(jsonBody);
+            JsonNode JSONbody = convertStringToJSON(JSONstring);
+            minifiedJson = writer.writeValueAsString(JSONbody);
             return ResponseEntity.ok(minifiedJson);
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(400).body(new Response(Code.BR4));
@@ -56,51 +54,49 @@ public class JsonToolsService {
     }
 
     public ResponseEntity<?> compareJSON(String firstJSONname, String secondJSONname) {
-        JsonNode firstJSON = storageJSON.get(firstJSONname);
-        JsonNode secondJSON = storageJSON.get(secondJSONname);
+        String firstJSONstring = storageJSON.get(firstJSONname);
+        String secondJSONstring = storageJSON.get(secondJSONname);
 
-        if (firstJSON == null || secondJSON == null) {
+        if (firstJSONstring == null || secondJSONstring == null) {
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
-
         try {
-            String differences = findDifferences(firstJSON, secondJSON);
+            String differences = findDifferences(firstJSONname, secondJSONname);
             return ResponseEntity.ok(differences);
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(new Response(Code.BR5));
         }
     }
 
-    private String findDifferences(JsonNode node1, JsonNode node2) {
+    private JsonNode convertStringToJSON(String JSONbody) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(JSONbody);
+    }
+
+    private String findDifferences(String firstJSONname, String secondJSONname) {
         StringBuilder differences = new StringBuilder();
-        int line_iter = 2; // Zaczynamy od drugiej linii bo pierwsza to '{'
-        Iterator<Map.Entry<String, JsonNode>> fields = node1.fields();
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = fields.next();
-            String key = entry.getKey();
-            JsonNode value1 = entry.getValue();
-            JsonNode value2 = node2.get(key);
 
-            if (value2 == null) {
-                differences.append(line_iter).append(": ").append("Key missing in second JSON: ").append(key).append(
-                        "\n");
-            } else if (!value1.equals(value2)) {
-                differences.append(line_iter).append(": ").append("Difference in key \"").append(key).append("\": ").append(value1).append(" vs ").append(value2).append("\n");
-            }
-            line_iter++;
-        }
+        String firstJSONstring = storageJSON.get(firstJSONname);
+        String secondJSONstring = storageJSON.get(secondJSONname);
 
-        // Sprawdź dodatkowe pola w drugim JSONie
-        fields = node2.fields();
-        line_iter = 2; // Zaczynamy od drugiej linii bo pierwsza to '{'
-        while (fields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = fields.next();
-            if (!node1.has(entry.getKey())) {
-                differences.append(line_iter).append(": ").append("Key missing in first JSON: ").append(entry.getKey()).append("\n");
+        String[] firstJSONlines = firstJSONstring.split("\\r?\\n");
+        String[] secondJSONlines = secondJSONstring.split("\\r?\\n");
+
+        int minLines = Math.min(firstJSONlines.length, secondJSONlines.length);
+
+        for (int i = 0; i < minLines; i++) {
+            String lineFirstJSON = firstJSONlines[i];
+            String lineSecondJSON = secondJSONlines[i];
+            if (!lineFirstJSON.equals(lineSecondJSON)) {
+                differences.append(i+1).append(": \n");
+                differences.append(" - ").append(firstJSONname).append(": ").append(lineFirstJSON).append("\n");
+                differences.append(" - ").append(secondJSONname).append(": ").append(lineSecondJSON).append("\n");
             }
-            line_iter++;
         }
-        if (!differences.isEmpty()) return differences.toString();
-        else return "Brak różnic!";
+        differences.append("Difference between amount of lines: ").append(": \n");
+        differences.append(" - ").append(firstJSONname).append(": ").append(firstJSONlines.length).append("\n");
+        differences.append(" - ").append(secondJSONname).append(": ").append(secondJSONlines.length).append("\n");
+
+        return differences.toString();
     }
 }
