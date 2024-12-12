@@ -32,7 +32,7 @@ public class JsonToolsController
     @RequestMapping(path="/get-full",method = RequestMethod.GET)
     public ResponseEntity<?> fullJSON(@RequestParam String JSONname, HttpServletResponse response)
     {
-        return ResponseEntity.ok("ok");
+        return jsonToolsService.fullJSON(JSONname);
     }
 
     @RequestMapping(path="/get-filtered",method = RequestMethod.GET)
