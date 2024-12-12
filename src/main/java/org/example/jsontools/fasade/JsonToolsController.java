@@ -8,6 +8,8 @@ import org.example.jsontools.services.JsonToolsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/jsontools")
 @RequiredArgsConstructor
@@ -36,9 +38,9 @@ public class JsonToolsController
     }
 
     @RequestMapping(path="/get-filtered",method = RequestMethod.GET)
-    public ResponseEntity<?> filterJSON(@RequestParam String JSONname, HttpServletResponse response)
+    public ResponseEntity<?> filterJSON(@RequestParam String JSONname, @RequestParam List<String> keysToLeave, HttpServletResponse response)
     {
-        return ResponseEntity.ok("ok");
+        return jsonToolsService.filtJSON(JSONname,keysToLeave);
     }
 
     @RequestMapping(path="/get-without",method = RequestMethod.GET)

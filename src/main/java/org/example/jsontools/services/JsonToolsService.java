@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -51,4 +53,35 @@ public class JsonToolsService {
             return ResponseEntity.status(400).body(new Response(Code.BR4));
         }
     }
+
+    public ResponseEntity<?> filtJSON(String JSONname, List<String> keysToLeave) {
+        if (storageJSON.get(JSONname) == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
+        JsonNode jsonBody = storageJSON.get(JSONname).deepCopy();
+
+        JsonNode filteredNode = filterKeys(jsonBody, keysToLeave);
+
+        return ResponseEntity.status(200).body(filteredNode);
+    }
+
+    private static JsonNode filterKeys(JsonNode rootNode, List<String> keys) {
+        if (rootNode.isObject()) {
+            Iterator<String> fieldNames = rootNode.fieldNames();
+            while (fieldNames.hasNext()) {
+                String fieldName = fieldNames.next();
+                if (keys.contains(fieldName)) {
+                    filterKeys(rootNode.get(fieldName), keys);
+                } else {
+                    fieldNames.remove();
+                }
+            }
+        } else if (rootNode.isArray()) {
+            for (JsonNode arrayElement : rootNode) {
+                filterKeys(arrayElement, keys);
+            }
+        }
+        return rootNode;
+    }
 }
+
