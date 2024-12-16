@@ -20,9 +20,10 @@ public class JsonToolsController
     private final JsonToolsService jsonToolsService;
 
     @RequestMapping(path="/load-json",method = RequestMethod.POST)
-    public ResponseEntity<?> loadJSON(@RequestBody JsonNode json, @RequestParam String JSONname, HttpServletResponse response)
+    public ResponseEntity<?> loadJSON(@RequestBody String JSONbody, @RequestParam String JSONname,
+                                      HttpServletResponse response)
     {
-        return jsonToolsService.saveJSON(json, JSONname);
+        return jsonToolsService.saveJSON(JSONbody, JSONname);
     }
 
     @RequestMapping(path="/get-minimalize",method = RequestMethod.GET)
@@ -52,7 +53,7 @@ public class JsonToolsController
     @RequestMapping(path="/get-differences",method = RequestMethod.GET)
     public ResponseEntity<?> diffJSONs(@RequestParam String JSONname1,  @RequestParam String JSONname2, HttpServletResponse response)
     {
-        return ResponseEntity.ok("ok");
+        return jsonToolsService.compareJSON(JSONname1, JSONname2);
     }
 
 
