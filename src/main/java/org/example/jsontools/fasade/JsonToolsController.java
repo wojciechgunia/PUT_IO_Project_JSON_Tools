@@ -34,13 +34,13 @@ public class JsonToolsController
     @RequestMapping(path="/get-full",method = RequestMethod.GET)
     public ResponseEntity<?> fullJSON(@RequestParam String JSONname, HttpServletResponse response)
     {
-        return ResponseEntity.ok("ok");
+        return jsonToolsService.fullJSON(JSONname);
     }
 
     @RequestMapping(path="/get-filtered",method = RequestMethod.GET)
-    public ResponseEntity<?> filterJSON(@RequestParam String JSONname, HttpServletResponse response)
+    public ResponseEntity<?> filterJSON(@RequestParam String JSONname, @RequestParam List<String> keysToLeave, HttpServletResponse response)
     {
-        return ResponseEntity.ok("ok");
+        return jsonToolsService.filtJSON(JSONname,keysToLeave);
     }
 
     @RequestMapping(path="/get-without",method = RequestMethod.GET)
