@@ -38,14 +38,34 @@ public class JsonToolsService {
             storageString.put(JSONname, JSONbody);
             storageJSON.put(JSONname, convertStringToJSON(JSONbody));
             return ResponseEntity.ok(new Response(Code.SUCCESS));
-        } catch (RuntimeException e | JsonProcessingException e) {
+        } catch (RuntimeException | JsonProcessingException e) {
             return ResponseEntity.status(400).body(new Response(Code.BR1));
         }
     }
 
+    public ResponseEntity<?> getJSON(String JSONname)
+    {
+        JsonNode JSONbody = storageJSON.get(JSONname);
+        if (JSONbody == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
+
+        return ResponseEntity.ok(JSONbody);
+    }
+
+    public ResponseEntity<?> getOriginal(String JSONname)
+    {
+        String Stringbody = storageString.get(JSONname);
+        if (Stringbody == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
+
+        return ResponseEntity.ok(Stringbody);
+    }
+
     public ResponseEntity<?> minJSON(String JSONname) {
-        String JSONstring = storageJSON.get(JSONname);
-        if (JSONstring == null) {
+        JsonNode JSONbody = storageJSON.get(JSONname);
+        if (JSONbody == null) {
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
 
@@ -54,22 +74,19 @@ public class JsonToolsService {
         String minifiedJson;
 
         try {
-            JsonNode JSONbody = convertStringToJSON(JSONstring);
             minifiedJson = writer.writeValueAsString(JSONbody);
             return ResponseEntity.ok(minifiedJson);
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(400).body(new Response(Code.BR4));
         }
     }
-  
+
     public ResponseEntity<?> fullJSON(String JSONname) {
-        JsonNode jsonBody = storageJSON.get(JSONname).deepCopy();
+        JsonNode jsonBody = storageJSON.get(JSONname);
         if (jsonBody == null) {
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
-        JsonNode filteredNode = filterKeys(jsonBody, keysToRemove);
         ObjectMapper objectMapper = new ObjectMapper();
-
         ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
         String fulliedJson;
         try {
@@ -175,10 +192,12 @@ public class JsonToolsService {
                 differences.append(" - ").append(secondJSONname).append(": ").append(lineSecondJSON).append("\n");
             }
         }
-        differences.append("Difference between amount of lines: ").append(": \n");
-        differences.append(" - ").append(firstJSONname).append(": ").append(firstJSONlines.length).append("\n");
-        differences.append(" - ").append(secondJSONname).append(": ").append(secondJSONlines.length).append("\n");
-
+        if(firstJSONlines.length != secondJSONlines.length)
+        {
+            differences.append("Difference between amount of lines: ").append(": \n");
+            differences.append(" - ").append(firstJSONname).append(": ").append(firstJSONlines.length).append("\n");
+            differences.append(" - ").append(secondJSONname).append(": ").append(secondJSONlines.length).append("\n");
+        }
         return differences.toString();
     }
 }

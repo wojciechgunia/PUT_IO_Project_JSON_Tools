@@ -26,6 +26,18 @@ public class JsonToolsController
         return jsonToolsService.saveJSON(JSONbody, JSONname);
     }
 
+    @RequestMapping(path="/get-json",method = RequestMethod.GET)
+    public ResponseEntity<?> getJSON(@RequestParam String JSONname, HttpServletResponse response)
+    {
+        return jsonToolsService.getJSON(JSONname);
+    }
+
+    @RequestMapping(path="/get-original",method = RequestMethod.GET)
+    public ResponseEntity<?> getOriginal(@RequestParam String JSONname, HttpServletResponse response)
+    {
+        return jsonToolsService.getOriginal(JSONname);
+    }
+
     @RequestMapping(path="/get-minimalize",method = RequestMethod.GET)
     public ResponseEntity<?> minJSON(@RequestParam String JSONname, HttpServletResponse response)
     {
