@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -19,17 +21,24 @@ import java.util.Map;
 @Slf4j
 public class JsonToolsService {
 
-    private final Map<String, String> storageJSON = new HashMap<>();
+    private final Map<String, JsonNode> storageJSON = new HashMap<>();
+    private final Map<String, String> storageString = new HashMap<>();
+  
+    private JsonNode convertStringToJSON(String JSONbody) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readTree(JSONbody);
+    }
 
     public ResponseEntity<?> saveJSON(String JSONbody, String JSONname) {
-        if(storageJSON.containsKey(JSONname)) {
+        if(storageString.containsKey(JSONname) || storageJSON.containsKey(JSONname)) {
             return ResponseEntity.status(400).body(new Response(Code.BR2));
         }
 
         try {
-            storageJSON.put(JSONname, JSONbody);
+            storageString.put(JSONname, JSONbody);
+            storageJSON.put(JSONname, convertStringToJSON(JSONbody));
             return ResponseEntity.ok(new Response(Code.SUCCESS));
-        } catch (RuntimeException e) {
+        } catch (RuntimeException e | JsonProcessingException e) {
             return ResponseEntity.status(400).body(new Response(Code.BR1));
         }
     }
@@ -52,10 +61,88 @@ public class JsonToolsService {
             return ResponseEntity.status(400).body(new Response(Code.BR4));
         }
     }
+  
+    public ResponseEntity<?> fullJSON(String JSONname) {
+        JsonNode jsonBody = storageJSON.get(JSONname).deepCopy();
+        if (jsonBody == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
+        JsonNode filteredNode = filterKeys(jsonBody, keysToRemove);
+        ObjectMapper objectMapper = new ObjectMapper();
 
+        ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
+        String fulliedJson;
+        try {
+            fulliedJson = writer.writeValueAsString(jsonBody);
+            return ResponseEntity.status(200).body(fulliedJson);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(400).body(new Response(Code.BR4));
+        }
+    }
+
+    public ResponseEntity<?> filtJSON(String JSONname, List<String> keysToLeave) {
+        if (storageJSON.get(JSONname) == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
+        JsonNode jsonBody = storageJSON.get(JSONname).deepCopy();
+
+        JsonNode filteredNode = filterKeys(jsonBody, keysToLeave);
+
+        return ResponseEntity.status(200).body(filteredNode);
+    }
+
+    private static JsonNode filterKeys(JsonNode rootNode, List<String> keys) {
+        if (rootNode.isObject()) {
+            Iterator<String> fieldNames = rootNode.fieldNames();
+            while (fieldNames.hasNext()) {
+                String fieldName = fieldNames.next();
+                if (keys.contains(fieldName)) {
+                    filterKeys(rootNode.get(fieldName), keys);
+                } else {
+                    fieldNames.remove();
+                }
+            }
+        } else if (rootNode.isArray()) {
+            for (JsonNode arrayElement : rootNode) {
+                filterKeys(arrayElement, keys);
+            }
+        }
+        return rootNode;
+    }
+  
+    public ResponseEntity<?> withoutJSON(String JSONname, List<String> keysToRemove) {
+        JsonNode jsonBody = storageJSON.get(JSONname).deepCopy();
+        if (jsonBody == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
+
+        JsonNode filteredNode = withoutKeys(jsonBody, keysToRemove);
+
+        return ResponseEntity.status(200).body(filteredNode);
+    }
+
+    private static JsonNode withoutKeys(JsonNode rootNode, List<String> keys) {
+        if (rootNode.isObject()) {
+            Iterator<String> fieldNames = rootNode.fieldNames();
+            while (fieldNames.hasNext()) {
+                String fieldName = fieldNames.next();
+                if (keys.contains(fieldName)) {
+                    fieldNames.remove();
+                } else {
+                    withoutKeys(rootNode.get(fieldName), keys);
+                }
+            }
+        } else if (rootNode.isArray()) {
+            for (JsonNode arrayElement : rootNode) {
+                filterKeys(arrayElement, keys);
+            }
+        }
+        return rootNode;
+    }
+      
     public ResponseEntity<?> compareJSON(String firstJSONname, String secondJSONname) {
-        String firstJSONstring = storageJSON.get(firstJSONname);
-        String secondJSONstring = storageJSON.get(secondJSONname);
+        String firstJSONstring = storageString.get(firstJSONname);
+        String secondJSONstring = storageString.get(secondJSONname);
 
         if (firstJSONstring == null || secondJSONstring == null) {
             return ResponseEntity.status(400).body(new Response(Code.BR3));
@@ -68,16 +155,11 @@ public class JsonToolsService {
         }
     }
 
-    private JsonNode convertStringToJSON(String JSONbody) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readTree(JSONbody);
-    }
-
     private String findDifferences(String firstJSONname, String secondJSONname) {
         StringBuilder differences = new StringBuilder();
 
-        String firstJSONstring = storageJSON.get(firstJSONname);
-        String secondJSONstring = storageJSON.get(secondJSONname);
+        String firstJSONstring = storageString.get(firstJSONname);
+        String secondJSONstring = storageString.get(secondJSONname);
 
         String[] firstJSONlines = firstJSONstring.split("\\r?\\n");
         String[] secondJSONlines = secondJSONstring.split("\\r?\\n");
@@ -100,3 +182,4 @@ public class JsonToolsService {
         return differences.toString();
     }
 }
+
