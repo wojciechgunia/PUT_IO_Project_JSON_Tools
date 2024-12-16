@@ -44,9 +44,9 @@ public class JsonToolsController
     }
 
     @RequestMapping(path="/get-without",method = RequestMethod.GET)
-    public ResponseEntity<?> withoutJSON(@RequestParam String JSONname, HttpServletResponse response)
+    public ResponseEntity<?> withoutJSON(@RequestParam String JSONname, @RequestParam List<String> keysToRemove, HttpServletResponse response)
     {
-        return ResponseEntity.ok("ok");
+        return jsonToolsService.withoutJSON(JSONname, keysToRemove);
     }
 
     @RequestMapping(path="/get-differences",method = RequestMethod.GET)
