@@ -53,6 +53,24 @@ public class JsonToolsService {
             return ResponseEntity.status(400).body(new Response(Code.BR4));
         }
     }
+  
+    public ResponseEntity<?> fullJSON(String JSONname) {
+        JsonNode jsonBody = storageJSON.get(JSONname);
+        if (jsonBody == null) {
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
+        String fulliedJson;
+        try {
+            fulliedJson = writer.writeValueAsString(jsonBody);
+            return ResponseEntity.status(200).body(fulliedJson);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(400).body(new Response(Code.BR4));
+        }
+    }
 
     public ResponseEntity<?> filtJSON(String JSONname, List<String> keysToLeave) {
         if (storageJSON.get(JSONname) == null) {
