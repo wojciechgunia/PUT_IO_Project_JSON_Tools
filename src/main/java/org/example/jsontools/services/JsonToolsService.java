@@ -3,16 +3,20 @@ package org.example.jsontools.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.jsontools.decorators.FilterFieldsJsonDecorator;
+import org.example.jsontools.decorators.MinifyJsonDecorator;
+import org.example.jsontools.decorators.PrettyPrintJsonDecorator;
+import org.example.jsontools.decorators.RemoveFieldsJsonDecorator;
+import org.example.jsontools.entity.BaseJsonProcessor;
 import org.example.jsontools.entity.Code;
+import org.example.jsontools.entity.JsonProcessor;
 import org.example.jsontools.entity.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,33 +27,39 @@ public class JsonToolsService {
 
     private final Map<String, JsonNode> storageJSON = new HashMap<>();
     private final Map<String, String> storageString = new HashMap<>();
-  
+
     private JsonNode convertStringToJSON(String JSONbody) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readTree(JSONbody);
     }
 
     public ResponseEntity<?> saveJSON(String JSONbody, String JSONname) {
-        if(storageString.containsKey(JSONname) || storageJSON.containsKey(JSONname)) {
+        log.info("Saving JSON with name: {}", JSONname);
+        if (storageString.containsKey(JSONname) || storageJSON.containsKey(JSONname)) {
+            log.warn("JSON with name '{}' already exists", JSONname);
             return ResponseEntity.status(400).body(new Response(Code.BR2));
         }
 
         try {
             storageString.put(JSONname, JSONbody);
             storageJSON.put(JSONname, convertStringToJSON(JSONbody));
+            log.info("JSON '{}' saved successfully", JSONname);
             return ResponseEntity.ok(new Response(Code.SUCCESS));
         } catch (RuntimeException | JsonProcessingException e) {
+            log.error("Error saving JSON: {}", e.getMessage());
             return ResponseEntity.status(400).body(new Response(Code.BR1));
         }
     }
 
-    public ResponseEntity<?> getJSON(String JSONname)
-    {
+    public ResponseEntity<?> getJSON(String JSONname) {
+        log.info("Fetching JSON with name: {}", JSONname);
         JsonNode JSONbody = storageJSON.get(JSONname);
         if (JSONbody == null) {
+            log.warn("JSON with name '{}' not found", JSONname);
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
 
+        log.debug("JSON fetched successfully: {}", JSONbody);
         return ResponseEntity.ok(JSONbody);
     }
 
@@ -57,107 +67,79 @@ public class JsonToolsService {
     {
         String Stringbody = storageString.get(JSONname);
         if (Stringbody == null) {
+            log.warn("JSON with name '{}' not found", JSONname);
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
-
+        log.debug("Original string fetched successfully: {}", Stringbody);
         return ResponseEntity.ok(Stringbody);
     }
 
-    public ResponseEntity<?> minJSON(String JSONname) {
-        JsonNode JSONbody = storageJSON.get(JSONname);
-        if (JSONbody == null) {
+    public ResponseEntity<?> fullJSON(String JSONname) {
+        log.info("Returning pretty JSON for: {}", JSONname);
+        JsonNode jsonBody = storageJSON.get(JSONname);
+        if (jsonBody == null) {
+            log.warn("JSON with name '{}' not found", JSONname);
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectWriter writer = objectMapper.writer();
-        String minifiedJson;
-
         try {
-            minifiedJson = writer.writeValueAsString(JSONbody);
-            return ResponseEntity.ok(minifiedJson);
+            JsonProcessor processor = new PrettyPrintJsonDecorator(new BaseJsonProcessor());
+            return ResponseEntity.ok(processor.process(jsonBody));
         } catch (JsonProcessingException e) {
+            log.error("Error processing pretty JSON: {}", e.getMessage());
             return ResponseEntity.status(400).body(new Response(Code.BR4));
         }
     }
 
-    public ResponseEntity<?> fullJSON(String JSONname) {
+    public ResponseEntity<?> minJSON(String JSONname) {
+        log.info("Returning minified JSON for: {}", JSONname);
         JsonNode jsonBody = storageJSON.get(JSONname);
         if (jsonBody == null) {
+            log.warn("JSON with name '{}' not found", JSONname);
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-        ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
-        String fulliedJson;
         try {
-            fulliedJson = writer.writeValueAsString(jsonBody);
-            return ResponseEntity.status(200).body(fulliedJson);
+            JsonProcessor processor = new MinifyJsonDecorator(new BaseJsonProcessor());
+            return ResponseEntity.ok(processor.process(jsonBody));
         } catch (JsonProcessingException e) {
+            log.error("Error processing minified JSON: {}", e.getMessage());
             return ResponseEntity.status(400).body(new Response(Code.BR4));
         }
     }
 
     public ResponseEntity<?> filtJSON(String JSONname, List<String> keysToLeave) {
-        if (storageJSON.get(JSONname) == null) {
-            return ResponseEntity.status(400).body(new Response(Code.BR3));
-        }
-        JsonNode jsonBody = storageJSON.get(JSONname).deepCopy();
-
-        JsonNode filteredNode = filterKeys(jsonBody, keysToLeave);
-
-        return ResponseEntity.status(200).body(filteredNode);
-    }
-
-    private static JsonNode filterKeys(JsonNode rootNode, List<String> keys) {
-        if (rootNode.isObject()) {
-            Iterator<String> fieldNames = rootNode.fieldNames();
-            while (fieldNames.hasNext()) {
-                String fieldName = fieldNames.next();
-                if (keys.contains(fieldName)) {
-                    filterKeys(rootNode.get(fieldName), keys);
-                } else {
-                    fieldNames.remove();
-                }
-            }
-        } else if (rootNode.isArray()) {
-            for (JsonNode arrayElement : rootNode) {
-                filterKeys(arrayElement, keys);
-            }
-        }
-        return rootNode;
-    }
-  
-    public ResponseEntity<?> withoutJSON(String JSONname, List<String> keysToRemove) {
-        JsonNode jsonBody = storageJSON.get(JSONname).deepCopy();
+        log.info("Filtering JSON fields for: {}, Keys to leave: {}", JSONname, keysToLeave);
+        JsonNode jsonBody = storageJSON.get(JSONname);
         if (jsonBody == null) {
+            log.warn("JSON with name '{}' not found", JSONname);
             return ResponseEntity.status(400).body(new Response(Code.BR3));
         }
-
-        JsonNode filteredNode = withoutKeys(jsonBody, keysToRemove);
-
-        return ResponseEntity.status(200).body(filteredNode);
-    }
-
-    private static JsonNode withoutKeys(JsonNode rootNode, List<String> keys) {
-        if (rootNode.isObject()) {
-            Iterator<String> fieldNames = rootNode.fieldNames();
-            while (fieldNames.hasNext()) {
-                String fieldName = fieldNames.next();
-                if (keys.contains(fieldName)) {
-                    fieldNames.remove();
-                } else {
-                    withoutKeys(rootNode.get(fieldName), keys);
-                }
-            }
-        } else if (rootNode.isArray()) {
-            for (JsonNode arrayElement : rootNode) {
-                filterKeys(arrayElement, keys);
-            }
+        try {
+            JsonProcessor processor = new FilterFieldsJsonDecorator(new BaseJsonProcessor(), keysToLeave);
+            return ResponseEntity.ok(processor.process(jsonBody));
+        } catch (JsonProcessingException e) {
+            log.error("Error filtering JSON fields: {}", e.getMessage());
+            return ResponseEntity.status(400).body(new Response(Code.BR4));
         }
-        return rootNode;
     }
-      
+
+    public ResponseEntity<?> withoutJSON(String JSONname, List<String> keysToRemove) {
+        log.info("Removing JSON fields for: {}, Keys to remove: {}", JSONname, keysToRemove);
+        JsonNode jsonBody = storageJSON.get(JSONname);
+        if (jsonBody == null) {
+            log.warn("JSON with name '{}' not found", JSONname);
+            return ResponseEntity.status(400).body(new Response(Code.BR3));
+        }
+        try {
+            JsonProcessor processor = new RemoveFieldsJsonDecorator(new BaseJsonProcessor(), keysToRemove);
+            return ResponseEntity.ok(processor.process(jsonBody));
+        } catch (JsonProcessingException e) {
+            log.error("Error removing JSON fields: {}", e.getMessage());
+            return ResponseEntity.status(400).body(new Response(Code.BR4));
+        }
+    }
+
     public ResponseEntity<?> compareJSON(String firstJSONname, String secondJSONname) {
+        log.info("Comparing JSONs {} and {}", firstJSONname, secondJSONname);
         String firstJSONstring = storageString.get(firstJSONname);
         String secondJSONstring = storageString.get(secondJSONname);
 
@@ -168,6 +150,7 @@ public class JsonToolsService {
             String differences = findDifferences(firstJSONname, secondJSONname);
             return ResponseEntity.ok(differences);
         } catch (RuntimeException e) {
+            log.error("Error comparing JSON fields: {}", e.getMessage());
             return ResponseEntity.status(400).body(new Response(Code.BR5));
         }
     }
