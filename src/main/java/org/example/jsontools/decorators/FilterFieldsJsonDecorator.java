@@ -2,6 +2,7 @@ package org.example.jsontools.decorators;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.jsontools.entity.JsonProcessor;
 
@@ -22,7 +23,8 @@ class FilterFieldsJsonDecorator extends JsonProcessorDecorator {
     public String process(JsonNode jsonNode) throws JsonProcessingException {
         log.debug("Filtering JSON fields");
         JsonNode filteredNode = filterKeys(jsonNode.deepCopy(), keysToLeave);
-        return super.process(filteredNode);
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(filteredNode);
     }
 
     private JsonNode filterKeys(JsonNode rootNode, List<String> keys) {
