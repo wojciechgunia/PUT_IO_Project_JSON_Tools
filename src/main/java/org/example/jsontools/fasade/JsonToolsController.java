@@ -73,6 +73,12 @@ public class JsonToolsController
         return jsonToolsService.getJsonList();
     }
 
+    @RequestMapping(path="/get-original-list",method = RequestMethod.GET)
+    public ResponseEntity<?> getOriginalList(HttpServletResponse response)
+    {
+        return jsonToolsService.getOriginalList();
+    }
+
     /**
      * Funkcja odsyła klientowi wybrany przez niego plik JSON w zminimalizowanej formie,
      * w celu oszczędzania danych

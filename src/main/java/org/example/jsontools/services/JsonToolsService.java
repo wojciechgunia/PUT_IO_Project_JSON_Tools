@@ -187,6 +187,11 @@ public class JsonToolsService {
 
     public ResponseEntity<?> getJsonList()
     {
+        return ResponseEntity.ok(storageJSON.keySet());
+    }
+
+    public ResponseEntity<?> getOriginalList()
+    {
         return ResponseEntity.ok(storageString.keySet());
     }
 }
