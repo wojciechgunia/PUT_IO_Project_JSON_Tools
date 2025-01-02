@@ -184,5 +184,10 @@ public class JsonToolsService {
         }
         return differences.toString();
     }
+
+    public ResponseEntity<?> getJsonList()
+    {
+        return ResponseEntity.ok(storageString.keySet());
+    }
 }
 

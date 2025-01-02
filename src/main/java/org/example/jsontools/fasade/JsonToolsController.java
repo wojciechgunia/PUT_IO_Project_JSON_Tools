@@ -16,6 +16,7 @@ import java.util.List;
  * przekazuje odpowiednie paramentry danym funkcją klasy JsonToolsService
  * oraz odsyła otrzymane odpowiedzi
  */
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/v1/jsontools")
 @RequiredArgsConstructor
@@ -64,6 +65,12 @@ public class JsonToolsController
     public ResponseEntity<?> getOriginal(@RequestParam String JSONname, HttpServletResponse response)
     {
         return jsonToolsService.getOriginal(JSONname);
+    }
+
+    @RequestMapping(path="/get-json-list",method = RequestMethod.GET)
+    public ResponseEntity<?> getJsonList(HttpServletResponse response)
+    {
+        return jsonToolsService.getJsonList();
     }
 
     /**
