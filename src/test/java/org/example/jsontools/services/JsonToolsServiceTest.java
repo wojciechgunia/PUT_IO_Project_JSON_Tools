@@ -1,7 +1,5 @@
 package org.example.jsontools.services;
 
-import org.example.jsontools.entity.Code;
-import org.example.jsontools.entity.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +9,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -172,7 +169,7 @@ class JsonToolsServiceTest {
     void testSaveJSONWithMock() {
 
         // Configure mock object
-        when(mockService.getJSON(jsonName)).thenReturn(ResponseEntity.ok(new ResponseEntity<>(jsonBody, HttpStatus.OK)));
+        when(mockService.getJSON(jsonName)).thenReturn(new ResponseEntity(jsonBody, HttpStatus.OK));
 
         // Interaction
         response = mockService.saveJSON(jsonBody, jsonName);
@@ -186,7 +183,7 @@ class JsonToolsServiceTest {
     void testGetJSONWithMock() {
 
         // Configure mock object
-        when(mockService.getJSON(jsonName)).thenReturn(ResponseEntity.ok(new ResponseEntity<>(jsonBody, HttpStatus.OK)));
+        when(mockService.getJSON(jsonName)).thenReturn(new ResponseEntity(jsonBody, HttpStatus.OK));
 
         // Interaction
         response = mockService.getJSON(jsonName);
@@ -200,7 +197,7 @@ class JsonToolsServiceTest {
     void testGetOriginalWithMock() {
 
         // Configure mock object
-        when(mockService.getOriginal(jsonName)).thenReturn(ResponseEntity.ok(new ResponseEntity<>(jsonBody, HttpStatus.OK)));
+        when(mockService.getOriginal(jsonName)).thenReturn(new ResponseEntity(jsonBody, HttpStatus.OK));
 
         // Interaction
         response = mockService.getOriginal(jsonName);
@@ -214,7 +211,7 @@ class JsonToolsServiceTest {
     void testFullJSONWithMock() {
 
         // Configure mock object
-        when(mockService.fullJSON(jsonName)).thenReturn(ResponseEntity.ok(new ResponseEntity<>(jsonBody, HttpStatus.OK)));
+        when(mockService.fullJSON(jsonName)).thenReturn(new ResponseEntity(jsonBody, HttpStatus.OK));
 
         // Interaction
         response = mockService.fullJSON(jsonName);
@@ -228,7 +225,7 @@ class JsonToolsServiceTest {
     void testMinJSONWithMock() {
 
         // Configure mock object
-        when(mockService.minJSON(jsonName)).thenReturn(ResponseEntity.ok(new ResponseEntity<>(jsonBody, HttpStatus.OK)));
+        when(mockService.minJSON(jsonName)).thenReturn(new ResponseEntity(jsonBody, HttpStatus.OK));
 
         // Interaction
         response = mockService.minJSON(jsonName);
