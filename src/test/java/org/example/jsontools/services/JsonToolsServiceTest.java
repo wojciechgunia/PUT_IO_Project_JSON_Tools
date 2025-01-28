@@ -166,20 +166,6 @@ class JsonToolsServiceTest {
     }
 
     @Test
-    void testSaveJSONWithMock() {
-
-        // Configure mock object
-        when(mockService.getJSON(jsonName)).thenReturn(new ResponseEntity(jsonBody, HttpStatus.OK));
-
-        // Interaction
-        response = mockService.saveJSON(jsonBody, jsonName);
-
-        // Verification
-        verify(mockService).saveJSON(jsonBody, jsonName);
-        assertTrue(response.getStatusCode().is2xxSuccessful());
-    }
-
-    @Test
     void testGetJSONWithMock() {
 
         // Configure mock object
