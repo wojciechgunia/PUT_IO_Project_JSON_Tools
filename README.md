@@ -1,6 +1,10 @@
 # JSON Tools
 
-Projekt napisany w języku Java z użyciem [Spring Boot](https://github.com/spring-projects/spring-boot) na wersji 3.1.X.  
+### Autorzy wykonanego projektu:
+<img src="https://skillicons.dev/icons?i=github" height="25" alt="github logo"/> [Wojciech Gunia](https://github.com/wojciechgunia)<br>
+<img src="https://skillicons.dev/icons?i=github" height="25" alt="github logo"/> [Remigiusz Janicki](https://github.com/TheRemekk)<br>
+<img src="https://skillicons.dev/icons?i=github" height="25" alt="github logo"/> [Filip Kęmpa](https://github.com/Pilif102)<br>
+<img src="https://skillicons.dev/icons?i=github" height="25" alt="github logo"/> [Paweł Kołaciński](https://github.com/KolacinskiP)
 
 ## Spis treści
 
@@ -17,6 +21,8 @@ JSON Tools pozwala zarówno na zminifikowanie niezminifikowanej reprezentacji JS
 
 Projekt korzysta z REST API, czyli interfejsu programistycznego opartego na architekturze REST, który umożliwia komunikację pomiędzy klientem a serwerem za pomocą protokołu HTTP.
 
+Projekt napisany w języku Java z użyciem [Spring Boot](https://github.com/spring-projects/spring-boot) na wersji 3.1.X.  
+
 <a id="l2"></a>
 ## Instalacja
 
@@ -27,7 +33,6 @@ Aby uruchomić ten projekt lokalnie, należy wykonać poniższe polecenia w term
   git clone https://github.com/wojciechgunia/PUT_IO_Project_JSON_Tools
   ``` 
 
-  
 Zalecam korzystać ze środowiska IntelliJ przy interakcji z aplikacją.  
 Port na którym działa aplikacja można zmienić w pliku .properties.
 Dla serwera działającego lokalnie na porcie 8080, bazowy URL wygląda następująco:
