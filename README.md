@@ -41,14 +41,13 @@ Dla serwera działającego lokalnie na porcie 8080, bazowy URL wygląda następu
 http://localhost:8080/api/v1/jsontools/..
 ``` 
 
-Uwaga! Program nie posiada jeszcze graficznego interfejsu użytkownika (GUI). 
+Program posiada graficzny interfejs w formie aplikacji internetowej, który można znaleźć w repozytorium [JSON Tools FE](https://github.com/wojciechgunia/PUT_IO_Project_JSON_Tools_FE).
+
 Aby uzyskać dostęp do dostępnych endpointów i przetestować ich działanie, należy skorzystać z narzędzi do wysyłania żądań HTTP, takich jak:
 
 * Postman
 * cURL
 * Inne dowolne narzędzie obsługujące REST API.
-
-Główna ścieżka do endpointów to:
 
 <a id="l3"></a>
 ## Funkcje
