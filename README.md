@@ -1,3 +1,5 @@
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/wojciechgunia/PUT_IO_Project_JSON_Tools/README-en.md)
+
 # JSON Tools - Backend
 
 ### GUI Angular: [JSON Tools FE](https://github.com/wojciechgunia/PUT_IO_Project_JSON_Tools_FE)
